@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Potatop</title>
+</head>
+
+<body>
+    <div id="player"></div>
+
+    <script>
+        var player;
+        const playlistId = 'PLBCF2DAC6FFB574DE';
+        const src = 'https://www.youtube.com/embed/{{videoId}}?autoplay=1';
+        var url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=5&playlistId=${playlistId}&key=AIzaSyBq6K9CEsw5No_r9u3ZuaFaD39oJ62HlB4`;
+        var list = [];
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        var tag = document.createElement('script');
+
+        tag.src = "https://www.youtube.com/iframe_api";
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                events: {
+                    onReady: play,
+                    onStateChange: onPlayerStateChange,
+                    onError: play
+                }
+            });
+        }
+
+        function onPlayerStateChange(e) {
+            console.log(e.data);
+            if(e.data == 0) {
+                play();
+            }
+        }
+
+        getJSON(url, res => {
+            list = res.items.map(item => {
+                return {
+                    title: item.snippet.title,
+                    videoId: item.snippet.resourceId.videoId
+                };
+            });
+            play();
+        });
+
+        function play() {
+            if (typeof player.loadVideoById == 'function' && list.length) {
+                var vidoeId = list.pop().videoId;
+                console.log(vidoeId);
+                player.loadVideoById(vidoeId);
+                player.playVideo();
+            }
+        }
+
+        function getJSON(url, callback) {
+            var xmlhttp = new XMLHttpRequest();
+
+            xmlhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var response = JSON.parse(this.responseText);
+                    callback(response);
+                }
+            };
+
+            xmlhttp.open('GET', url, true);
+            xmlhttp.send();
+        }
+    </script>
+</body>
+
+</html>
