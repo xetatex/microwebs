@@ -1,70 +1,77 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <link rel="alternate" type="application/rss+xml" title="Podcast" href="https://us-central1-xetatex-crew.cloudfunctions.net/feed"/>
-    <title>Quantum Mongolia Podcast</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Potatop</title>
 </head>
+
 <body>
-    <h1>Quantum Mongolia Podcast</h1>
-    <p>Quantum Mongolia подкастын дугаар бүр дээр шинжлэх ухаан, танин мэдэхүйн сонирхолтой сэдвүүдийг хөндөн ярилцах болно.</p>
-    <a href="https://us-central1-xetatex-crew.cloudfunctions.net/feed">RSS feed</a>
+    <div id="player"></div>
 
-    <br /><hr/><br />
+    <script>
+        var player;
+        const playlistId = 'PLBCF2DAC6FFB574DE';
+        const src = 'https://www.youtube.com/embed/{{videoId}}?autoplay=1';
+        var url = `https://www.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=5&playlistId=${playlistId}&key=AIzaSyBq6K9CEsw5No_r9u3ZuaFaD39oJ62HlB4`;
+        var list = [];
+        var firstScriptTag = document.getElementsByTagName('script')[0];
+        var tag = document.createElement('script');
 
-    <h3>#5 Хар нүхэн дотор юу байдаг вэ?</h3>
-    <p>
-        Хар нүх гэж юу вэ? Хар нүхний дотор орчлон ертөнц байдаг уу? Эсвэл юу ч байдаггүй юу? зэрэг сонирхолтой асуултуудыг хөндөн ярилцлаа.
-    </p>
-    <audio controls>
-        <source src="https://firebasestorage.googleapis.com/v0/b/xetatex-crew.appspot.com/o/qm_blackhole.mp3?alt=media&token=96586127-f082-497d-9ba7-4e1e69aee8d3" type="audio/mpeg">
-        Таны вэб хөтөч дээр тоглуулах боломжгүй байна :(
-    </audio>
+        tag.src = "https://www.youtube.com/iframe_api";
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-    <br /><hr/><br />
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                events: {
+                    onReady: play,
+                    onStateChange: onPlayerStateChange,
+                    onError: play
+                }
+            });
+        }
 
-    <h3>#4 Харийн соёл иргэншил</h3>
-    <p>
-        Quantum Mongolia шинжлэх ухаан танин мэдэхүйн подкастын 4-р дугаарт Харь гараг гэж юу вэ? Харийн соёл иргэншил гэж бий юу? Тэдэнтэй хэрхэн холбогдох вэ? зэрэг сэдвүүдийн тухай ярилцлаа.
-    </p>
-    <audio controls>
-        <source src="https://firebasestorage.googleapis.com/v0/b/xetatex-crew.appspot.com/o/Hari%20garag.mp3?alt=media&token=1606ad6a-bd0a-46b8-bdc6-1870f27d869c" type="audio/mpeg">
-        Таны вэб хөтөч дээр тоглуулах боломжгүй байна :(
-    </audio>
+        function onPlayerStateChange(e) {
+            console.log(e.data);
+            if(e.data == 0) {
+                play();
+            }
+        }
 
-    <br /><hr/><br />
+        getJSON(url, res => {
+            list = res.items.map(item => {
+                return {
+                    title: item.snippet.title,
+                    videoId: item.snippet.resourceId.videoId
+                };
+            });
+            play();
+        });
 
-    <h3>#3 Цаг хугацааны аялал</h3>
-    <p>
-        Quantum Mongolia шинжлэх ухаан, танин мэдэхүйн подкастын 3-р дугаарт "Цаг хугацааны аялалын" талаар ярилцлаа.
-    </p>
-    <audio controls>
-        <source src="https://firebasestorage.googleapis.com/v0/b/xetatex-crew.appspot.com/o/quantummongoliapodcast3timetravel.mp3?alt=media&token=c9860ce9-815e-4b3d-af31-ea26766a3bcf" type="audio/mpeg">
-        Таны вэб хөтөч дээр тоглуулах боломжгүй байна :(
-    </audio>
+        function play() {
+            if (typeof player.loadVideoById == 'function' && list.length) {
+                var vidoeId = list.pop().videoId;
+                console.log(vidoeId);
+                player.loadVideoById(vidoeId);
+                player.playVideo();
+            }
+        }
 
-    <br /><hr/><br />
+        function getJSON(url, callback) {
+            var xmlhttp = new XMLHttpRequest();
 
-    <h3>#2 Псевдо Шинжлэх Ухаан</h3>
-    <p>
-        Quantum Mongolia шинжлэх ухаан танин мэдэхүйн подкастын 2-р дугаар: Псевдо шинжлэх ухаан.
-    </p>
-    <audio controls>
-        <source src="https://firebasestorage.googleapis.com/v0/b/xetatex-crew.appspot.com/o/QM-PSeudoScience.mp3?alt=media&token=c115fcd7-a4d9-48c8-9a2c-42ea7c0a474b" type="audio/mpeg">
-        Таны вэб хөтөч дээр тоглуулах боломжгүй байна :(
-    </audio>
+            xmlhttp.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    var response = JSON.parse(this.responseText);
+                    callback(response);
+                }
+            };
 
-    <br /><hr/><br />
-
-    <h3>#1 Хиймэл оюун ба Шинжлэх ухаанч хандлага</h3>
-    <p>
-        Quantum Mongolia шинжлэх ухаан, танин мэдэхүйн подкастын анхны дугаар - хиймэл оюун ба Шинжлэх ухаанч хандлага
-    </p>
-    <audio controls>
-        <source src="https://firebasestorage.googleapis.com/v0/b/xetatex-crew.appspot.com/o/QM%20-%20Scientific%20Method.mp3?alt=media&token=6ca8752b-19d2-41f9-ab2b-4ef2a8e63ae9" type="audio/mpeg">
-        Таны вэб хөтөч дээр тоглуулах боломжгүй байна :(
-    </audio>
+            xmlhttp.open('GET', url, true);
+            xmlhttp.send();
+        }
+    </script>
 </body>
+
 </html>
